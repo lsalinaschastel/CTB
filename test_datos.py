@@ -32,19 +32,20 @@ df_cat = df[cat_vars]
 df_num = df[num_vars]
 
 
-# Analysis of categorical variables
+# Analysis of CATEGORICAL variables
 
 
 for i in df_cat.columns:
 
-
     if len(df_cat[i].value_counts()) <= 2:
         # Pie chart
         fig = plt.figure(figsize=(20, 5))
-        df_cat.groupby(i).size().plot(kind='pie', textprops={'fontsize': 10},colors=['gold', 'blue'])
+        df_cat.groupby(i).size().plot(kind='pie', textprops={'fontsize': 15},
+                                      colors=['gold', 'blue'], autopct=lambda x: str(round(x, 2)) + '%',
+                                      pctdistance=0.5)
 
-        plt.legend(loc="lower left")
-        plt.title("Distribution")
+        #plt.legend(loc="lower left")
+        #plt.title("Distribution")
         plt.ylabel("")
         plt.savefig("Piechart_variable_" + str(i), dpi=300)
 
@@ -68,7 +69,6 @@ for i in df_cat.columns:
         plt.savefig("Barchart_variable_" + str(i), dpi=300)
 
         # Pict to ppt
-
         img_path = "Barchart_variable_" + str(i) + '.png'
         graph_slide_layout = ppt.slide_layouts[8]
         slide = ppt.slides.add_slide(graph_slide_layout)
@@ -80,6 +80,12 @@ for i in df_cat.columns:
         subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(
             len(df_cat)) + "\nMissing values: " + str(df_cat[i].isnull().sum()) + " (" + str(
             round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100), 2)) + " %)"
+
+
+
+
+# Analysis of QUANTITATIVE variables
+for i in df_cat.columns:
 
 ppt.save("Test.pptx")
 

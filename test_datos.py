@@ -18,10 +18,8 @@ num_vars = []
 
 # Create ppt
 ppt = Presentation()
-#blank_slide_layout = ppt.slide_layouts[6]
-#slide = ppt.slides.add_slide(blank_slide_layout)
-#left = top = Inches(1)
 
+# Separate cat from numerical variables
 for i, row in dictio.iterrows():
     if dictio['Type'][i] == 'Num':
         num_vars.append(dictio['Variable'][i])
@@ -34,7 +32,6 @@ df_num = df[num_vars]
 
 # Analysis of CATEGORICAL variables
 
-
 for i in df_cat.columns:
 
     if len(df_cat[i].value_counts()) <= 2:
@@ -45,7 +42,6 @@ for i in df_cat.columns:
                                       pctdistance=0.5)
 
         #plt.legend(loc="lower left")
-        #plt.title("Distribution")
         plt.ylabel("")
         plt.savefig("Piechart_variable_" + str(i), dpi=300)
 
@@ -85,7 +81,62 @@ for i in df_cat.columns:
 
 
 # Analysis of QUANTITATIVE variables
-for i in df_cat.columns:
+
+for i in df_num.columns:
+    # Statistics (appear directly in subtitle)
+    #means.append(np.nanmean(df_num[i]))
+    #medians.append(np.nanmedian(df_num[i]))
+    #modes.append(statistics.mode(df_num[i]))
+
+    # Box plot
+    fig = plt.figure()
+    plt.subplot(1,2,1)
+    df_num[i].plot.box(fontsize=8)
+    plt.title("Box plot")
+    #plt.savefig("Boxplot_variable_" + str(i), dpi=300)
+
+    # Finding outliers
+    outlier_free_list = []
+    outliers = []
+    perc_outliers = []
+    Q3 = np.nanquantile(df_num[i], 0.75)
+    Q1 = np.nanquantile(df_num[i], 0.25)
+
+    IQR = Q3 - Q1
+
+    lower_range = Q1 - 1.5 * IQR
+    upper_range = Q3 + 1.5 * IQR
+
+    # Filter the data that are free of outliers
+    for x in df_num[i]:
+        if (x > lower_range) & (x < upper_range):
+            outlier_free_list.append(x)
+
+        else:
+            outliers.append(x)
+    perc_outliers.append((len(outliers) / len(df_num)) * 100)
+
+
+    # Histogram
+
+    plt.subplot(1, 2, 2)
+    sns.histplot(df_num[i])
+    plt.title('Distribution')
+    plt.savefig("Num_variable_" + str(i), dpi=300)
+
+    # Picts to ppt
+    img_path = "Num_variable_" + str(i) + '.png'
+    #img_path2 = "Hist_variable_" + str(i) + '.png'
+
+    graph_slide_layout = ppt.slide_layouts[8]
+    slide = ppt.slides.add_slide(graph_slide_layout)
+
+    title = slide.shapes.title
+    title.text = str(i)
+    placeholder = slide.placeholders[1]
+    pic = placeholder.insert_picture(img_path)
+    subtitle = slide.placeholders[2]
+    subtitle.text = "Variable " + str(i) + " has: " + str(len(outliers)) + " outliers" + "\nMean: " + str(np.nanmean(df_num[i]))+ "\nMedian: " + str(np.nanmedian(df_num[i]) + "\nMode: " + str(statistics.mode)
 
 ppt.save("Test.pptx")
 

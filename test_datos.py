@@ -6,12 +6,8 @@ import seaborn as sns
 import statistics
 from statistics import mode
 from pptx import Presentation
-
-
-
-
-# def test_datos (file1, file2):
 from pptx.util import Inches
+
 
 df = pd.read_csv('COVID19_data.csv', index_col=0)
 dictio = pd.read_csv('Dict.csv', delimiter=';')
@@ -22,9 +18,9 @@ num_vars = []
 
 # Create ppt
 ppt = Presentation()
-blank_slide_layout = ppt.slide_layouts[6]
-slide = ppt.slides.add_slide(blank_slide_layout)
-left = top = Inches(1)
+#blank_slide_layout = ppt.slide_layouts[6]
+#slide = ppt.slides.add_slide(blank_slide_layout)
+#left = top = Inches(1)
 
 for i, row in dictio.iterrows():
     if dictio['Type'][i] == 'Num':
@@ -40,30 +36,50 @@ df_num = df[num_vars]
 
 
 for i in df_cat.columns:
-    # Null values y percentage
-    print("Number of missing values in attribute " + str(i) + ' is:', df_cat[i].isnull().sum(), "which is a" , round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100) , 2) , "%" )
+
 
     if len(df_cat[i].value_counts()) <= 2:
+        # Pie chart
         fig = plt.figure(figsize=(20, 5))
-        df_cat.groupby(i).size().plot(kind='pie', textprops={'fontsize': 20},
-                                          colors=['gold', 'blue'])
+        df_cat.groupby(i).size().plot(kind='pie', textprops={'fontsize': 10},colors=['gold', 'blue'])
 
+        plt.legend(loc="lower left")
+        plt.title("Distribution")
+        plt.ylabel("")
         plt.savefig("Piechart_variable_" + str(i), dpi=300)
 
-        # Pasar las fotos a ppt
+        # Pict to ppt
         img_path = "Piechart_variable_" + str(i) + '.png'
-        slide=ppt.slides.add_slide(blank_slide_layout)
-        pic = slide.shapes.add_picture(img_path,
-                                       left, top)
-        left = Inches(1)
-        height = Inches(1)
 
+        graph_slide_layout = ppt.slide_layouts[8]
+        slide = ppt.slides.add_slide(graph_slide_layout)
+
+        title = slide.shapes.title
+        title.text = str(i)
+        placeholder = slide.placeholders[1]
+        pic = placeholder.insert_picture(img_path)
+        subtitle = slide.placeholders[2]
+        subtitle.text = str(len(df_cat[i].value_counts()))+ " categories" + "\nSample size: " + str(len(df_cat)) + "\nMissing values: " + str(df_cat[i].isnull().sum()) + " (" + str(round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100),2)) + " %)"
 
     else:
-        #Bar chart
-        print("bar chart")
+        # Bar chart
+        fig = plt.figure()
+        df_cat.groupby(i).size().plot(kind='bar', rot=0)
+        plt.savefig("Barchart_variable_" + str(i), dpi=300)
+
+        # Pict to ppt
+
+        img_path = "Barchart_variable_" + str(i) + '.png'
+        graph_slide_layout = ppt.slide_layouts[8]
+        slide = ppt.slides.add_slide(graph_slide_layout)
+        title = slide.shapes.title
+        title.text = str(i)
+        placeholder = slide.placeholders[1]
+        pic = placeholder.insert_picture(img_path)
+        subtitle = slide.placeholders[2]
+        subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(
+            len(df_cat)) + "\nMissing values: " + str(df_cat[i].isnull().sum()) + " (" + str(
+            round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100), 2)) + " %)"
 
 ppt.save("Test.pptx")
-
-
 

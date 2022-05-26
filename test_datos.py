@@ -56,7 +56,7 @@ for i in df_cat.columns:
         placeholder = slide.placeholders[1]
         pic = placeholder.insert_picture(img_path)
         subtitle = slide.placeholders[2]
-        subtitle.text = str(len(df_cat[i].value_counts()))+ " categories" + "\nSample size: " + str(len(df_cat)) + "\nMissing values: " + str(df_cat[i].isnull().sum()) + " (" + str(round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100),2)) + " %)"
+        subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(len(df_cat)) + "\nMissing values: " + str(df_cat[i].isnull().sum()) + " (" + str(round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100),2)) + " %)" + "\nMode: " + str(statistics.mode(df_cat[i]))
 
     else:
         # Bar chart
@@ -75,7 +75,7 @@ for i in df_cat.columns:
         subtitle = slide.placeholders[2]
         subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(
             len(df_cat)) + "\nMissing values: " + str(df_cat[i].isnull().sum()) + " (" + str(
-            round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100), 2)) + " %)"
+            round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100), 2)) + " %)" + "\nMode: " + str(statistics.mode(df_cat[i]))
 
 
 
@@ -120,8 +120,9 @@ for i in df_num.columns:
     # Histogram
 
     plt.subplot(1, 2, 2)
-    sns.histplot(df_num[i])
+    sns.distplot(df_num[i]) #scatter plot
     plt.title('Distribution')
+    plt.ylabel("")
     plt.savefig("Num_variable_" + str(i), dpi=300)
 
     # Picts to ppt
@@ -136,7 +137,7 @@ for i in df_num.columns:
     placeholder = slide.placeholders[1]
     pic = placeholder.insert_picture(img_path)
     subtitle = slide.placeholders[2]
-    subtitle.text = "Variable " + str(i) + " has: " + str(len(outliers)) + " outliers" + "\nMean: " + str(np.nanmean(df_num[i]))+ "\nMedian: " + str(np.nanmedian(df_num[i]) + "\nMode: " + str(statistics.mode)
+    subtitle.text = "Variable " + str(i) + " has: " + str(len(outliers)) + " outliers" + "\nMean: " + str(round(np.nanmean(df_num[i]),2)) + "\nMedian: " + str(np.nanmedian(df_num[i]))
 
 ppt.save("Test.pptx")
 

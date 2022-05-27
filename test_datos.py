@@ -9,28 +9,46 @@ from pptx import Presentation
 from pptx.util import Inches
 
 
-df = pd.read_csv('COVID19_data.csv', index_col=0)
-dictio = pd.read_csv('Dict.csv', delimiter=';')
 
+# Test data
+#df = pd.read_csv('COVID19_data.csv', index_col=0)
+#dictio = pd.read_csv('Dict.csv', delimiter=';')
 
-cat_vars = []
-num_vars = []
+# Real data
+df = pd. read_excel('datos_20220526_shorter.xlsx', index_col=None, na_values=['NA'])
+dictio=pd. read_excel('Dict_2.xlsx', index_col=None) # or 0
+
+# Remove date columns (if it does not say in the type it is a date)
+# for i in df.columns:
+#     if df[i].dtype=='datetime64[ns]':
+#         df=df.drop([i],axis=1)
+#         dictio=dictio.drop([i])
+
 
 # Create ppt
 ppt = Presentation()
 
+# Remove columns that have no values
+
+
+
 # Separate cat from numerical variables
+cat_vars = []
+num_vars = []
 for i, row in dictio.iterrows():
-    if dictio['Type'][i] == 'Num':
+    if dictio['Type'][i] == 'num':
         num_vars.append(dictio['Variable'][i])
-    else:
+    elif dictio['Type'][i] == 'cat':
         cat_vars.append(dictio['Variable'][i])
+        # cat_vars.append(dictio.index[i])
+
 
 df_cat = df[cat_vars]
 df_num = df[num_vars]
 
 
 # Analysis of CATEGORICAL variables
+# si están todas las columnas vacías quitar datos.
 
 for i in df_cat.columns:
 

@@ -15,8 +15,8 @@ from pptx.util import Inches
 #dictio = pd.read_csv('Dict.csv', delimiter=';')
 
 # Real data
-df = pd. read_excel('datos_20220526_shorter.xlsx', index_col=None, na_values=['NA'])
-dictio=pd. read_excel('Dict_2.xlsx', index_col=None) # or 0
+df = pd. read_excel('Final_data.xlsx', index_col=None, na_values=['NA'])
+dictio=pd. read_excel('Dict_3.xlsx', index_col=None) # or 0
 
 # Remove date columns (if it does not say in the type it is a date)
 # for i in df.columns:

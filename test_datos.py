@@ -15,8 +15,8 @@ from pptx.util import Inches
 #dictio = pd.read_csv('Dict.csv', delimiter=';')
 
 # Real data
-df = pd. read_excel('Final_data.xlsx', index_col=None, na_values=['NA'])
-dictio=pd. read_excel('Dict_3.xlsx', index_col=None) # or 0
+df = pd.read_excel('Concat_data.xlsx', index_col=None)
+dictio=pd.read_excel('Dict_final.xlsx', index_col=None) # or 0
 
 # Remove date columns (if it does not say in the type it is a date)
 # for i in df.columns:
@@ -49,7 +49,7 @@ df_num = df[num_vars]
 
 # Analysis of CATEGORICAL variables
 # si están todas las columnas vacías quitar datos.
-
+df_cat=df_cat.fillna('Missing values')
 for i in df_cat.columns:
 
     if len(df_cat[i].value_counts()) <= 2:
@@ -59,7 +59,7 @@ for i in df_cat.columns:
                                       colors=['gold', 'blue'], autopct=lambda x: str(round(x, 2)) + '%',
                                       pctdistance=0.5)
 
-        #plt.legend(loc="lower left")
+
         plt.ylabel("")
         plt.savefig("Piechart_variable_" + str(i), dpi=300)
 
@@ -74,7 +74,7 @@ for i in df_cat.columns:
         placeholder = slide.placeholders[1]
         pic = placeholder.insert_picture(img_path)
         subtitle = slide.placeholders[2]
-        subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(len(df_cat)) + "\nMissing values: " + str(df_cat[i].isnull().sum()) + " (" + str(round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100),2)) + " %)" + "\nMode: " + str(statistics.mode(df_cat[i]))
+        subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(len(df_cat)) +  " (" + str(round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100),2)) + " %)" + "\nMode: " + str(statistics.mode(df_cat[i]))
 
     else:
         # Bar chart
@@ -92,13 +92,21 @@ for i in df_cat.columns:
         pic = placeholder.insert_picture(img_path)
         subtitle = slide.placeholders[2]
         subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(
-            len(df_cat)) + "\nMissing values: " + str(df_cat[i].isnull().sum()) + " (" + str(
+            len(df_cat))  + " (" + str(
             round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100), 2)) + " %)" + "\nMode: " + str(statistics.mode(df_cat[i]))
 
 
 
 
 # Analysis of QUANTITATIVE variables
+
+#Delete variables with no values
+# Find the columns where each value is null
+cols_empty = [col for col in df_num.columns if df_num[col].isnull().all()]
+# Drop these columns from the dataframe
+df_num.drop(cols_empty,
+        axis=1,
+        inplace=True)
 
 for i in df_num.columns:
     # Statistics (appear directly in subtitle)
@@ -107,9 +115,10 @@ for i in df_num.columns:
     #modes.append(statistics.mode(df_num[i]))
 
     # Box plot
+
     fig = plt.figure()
     plt.subplot(1,2,1)
-    df_num[i].plot.box(fontsize=8)
+    df_num[i].dropna(axis=0).plot.box(fontsize=8)
     plt.title("Box plot")
     #plt.savefig("Boxplot_variable_" + str(i), dpi=300)
 
@@ -155,7 +164,7 @@ for i in df_num.columns:
     placeholder = slide.placeholders[1]
     pic = placeholder.insert_picture(img_path)
     subtitle = slide.placeholders[2]
-    subtitle.text = "Variable " + str(i) + " has: " + str(len(outliers)) + " outliers" + "\nMean: " + str(round(np.nanmean(df_num[i]),2)) + "\nMedian: " + str(np.nanmedian(df_num[i]))
+    subtitle.text = "Variable " + str(i) + " has: " + str(len(outliers)) + " outliers" + "\nMean: " + str(round(np.nanmean(df_num[i]),2)) + "\nMedian: " + str(np.nanmedian(df_num[i])) + "\nMissing values: " + str(df_num[i].isnull().sum())
 
 ppt.save("Test.pptx")
 

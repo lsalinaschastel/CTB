@@ -1,6 +1,7 @@
 import pandas as pd
 
-df = pd.read_csv('patient.csv', sep=';')
+file_name=''
+df = pd.read_csv(file_name + '.csv', sep=';')
 
 # Create new dataframe with as many rows as patients
 ehrs = df['ehr'].unique()
@@ -59,4 +60,4 @@ for i in df.columns:
 
 
 
-df_new.to_csv('patient_transf.csv', sep=';')
+df_new.to_csv(file_name + '_transf' + '.csv', sep=';')

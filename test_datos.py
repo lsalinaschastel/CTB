@@ -35,17 +35,21 @@ ppt = Presentation()
 # Separate cat from numerical variables
 cat_vars = []
 num_vars = []
+date_vars=[]
+
 for i, row in dictio.iterrows():
     if dictio['Type'][i] == 'num':
         num_vars.append(dictio['Variable'][i])
     elif dictio['Type'][i] == 'cat':
         cat_vars.append(dictio['Variable'][i])
         # cat_vars.append(dictio.index[i])
+    elif dictio['Type'][i] == 'date':
+        date_vars.append(dictio['Variable'][i])
 
 
 df_cat = df[cat_vars]
 df_num = df[num_vars]
-
+date_vars = df[date_vars]
 
 # Analysis of CATEGORICAL variables
 # si están todas las columnas vacías quitar datos.
@@ -168,3 +172,4 @@ for i in df_num.columns:
 
 ppt.save("Test.pptx")
 
+# Analysis of date variables

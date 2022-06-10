@@ -1,20 +1,12 @@
-
+from datetime import datetime
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statistics
-from statistics import mode
-from datetime import date, timedelta, datetime
-import io
 from pptx import Presentation
-from pptx.util import Inches
 
 
-
-# Test data
-#df = pd.read_csv('COVID19_data.csv', index_col=0)
-#dictio = pd.read_csv('Dict.csv', delimiter=';')
 
 # Real data
 df=pd.read_csv('concat_datas_elea.csv', index_col=0, sep=';')
@@ -22,77 +14,72 @@ df=pd.read_csv('concat_datas_elea.csv', index_col=0, sep=';')
 #df = pd.read_csv('concat_datas.csv', index_col=0, delimiter=';')
 dictio = pd.read_csv('Dict_final_elea.csv', delimiter=';')
 
-#df=pd.read_csv('concat_data_final.csv', index_col=0, sep=';')
-#dictio=pd.read_excel('Dict_final.xlsx',index_col=None)
-
-#Fill in missing values
-#df=df.fillna('Missing values')
-# Remove date columns (if it does not say in the type it is a date)
-# for i in df.columns:
-#     if df[i].dtype=='datetime64[ns]':
-#         df=df.drop([i],axis=1)
-#         dictio=dictio.drop([i])
-
-
 # Create ppt
 ppt = Presentation()
-
-# Remove columns that have no values
-
 
 
 # Separate cat from numerical variables
 cat_vars = []
 num_vars = []
-date_vars=[]
+date_vars = []
 
 for i, row in dictio.iterrows():
     if dictio['Type'][i] == 'num':
         num_vars.append(dictio['Variable'][i])
     elif dictio['Type'][i] == 'cat':
         cat_vars.append(dictio['Variable'][i])
-        # cat_vars.append(dictio.index[i])
     elif dictio['Type'][i] == 'date':
         date_vars.append(dictio['Variable'][i])
 
 
 df_cat = df[cat_vars]
 df_num = df[num_vars]
-df_dates = df[date_vars]
+df_date = df[date_vars]
 
-# Analysis of DATES variables
 
-# Convert all columns to date type
+# Analysis of dates
 
-for col in df_dates.columns:
-    if df_dates[col].dtypes == 'O':
-        df_dates[col] = pd.to_datetime(df_dates[col])
+df = df.fillna('Missing values')
 
-    if df_dates[col].dtypes == 'float64' or 'int64':
-        df_dates[col] = pd.to_datetime(df_dates[col], format='%Y')
+df_date = pd.DataFrame(columns=['days_btw_diagnosis_surgery','days_btw_diagnosis_death','days_btw_diagnosis_first_treatment', 'days_btw_first_last_schema'])
+df_yes_no = pd.DataFrame(columns=['death'])
 
-# Finding columns "automatically"
-dx_date=df_dates.filter(regex='diagnosis|dx').columns
-first_treat=df_dates.filter(regex='first_treat').columns
-rec_year=df_dates.filter(regex='recurrence|rec').columns
-death_year=df_dates.filter(regex='death_year|death_date').columns
+# "Automatically" select the columns
+dx_date=df.filter(regex='diagnosis|dx').columns
+first_treat=df.filter(regex='first_treat').columns
+rec_year=df.filter(regex='recurrence|rec').columns
+death_year=df.filter(regex='death_year|death_date').columns
 
-# Operations with dx_date
-days_dx_treat=df_dates[first_treat].iloc[:,0]-df_dates[dx_date].iloc[:,0]
-days_dx_surg1=df_dates['date_1']-df_dates[dx_date].iloc[:,0]
-#days_dx_rec=df_dates[rec_year].iloc[:,0]-df_dates[dx_date].iloc[:,0]
-days_dx_death=df_dates[death_year].iloc[:,0]-df_dates[dx_date].iloc[:,0]
 
-# Add to df_num for plotting
-df_num['days_dx_treat']=days_dx_treat
-#df_num['days_dx_rec']=days_dx_rec
-df_num['days_dx_death']=days_dx_death
+def reformate_date (i, j, date_2, title, df_):
+    if df.iloc[j][i] != 'Missing values' and df.iloc[j][date_2] != 'Missing values':
+        first_date = str(df.iloc[j][i])
+        second_date = str(df.iloc[j][date_2])
+        formatted_date1 = datetime.strptime(first_date, "%d/%m/%Y")
+        formatted_date2 = datetime.strptime(second_date, "%d/%m/%Y")
+        df_.loc[j, title] = (formatted_date2 - formatted_date1).total_seconds() / 86400
+
+
+for i in df.columns:
+    if i == dx_date[0]:
+        for j in range(df.shape[0]):
+            reformate_date(i, j, 'surgery_date_1', 'days_btw_diagnosis_surgery', df_date)
+            reformate_date(i, j,death_year[0], 'days_btw_diagnosis_death', df_date)
+            if df.iloc[j][i] != 'Missing values' and df.iloc[j]['death_date_1'] != 'Missing values':
+                df_yes_no.loc[j, 'death'] = 'yes'
+            if df.iloc[j][death_year[0]] == 'Missing values':
+                df_yes_no.loc[j, 'death'] = 'no'
+            reformate_date(i, j,first_treat[0], 'days_btw_diagnosis_first_treatment', df_date)
+
+
+
+df_num = pd.concat([df_num, df_date], ignore_index=True)
+df_cat = pd.concat([df_cat, df_yes_no], ignore_index=True)
 
 
 
 # Analysis of CATEGORICAL variables
-# si están todas las columnas vacías quitar datos.
-df_cat=df_cat.fillna('Missing values')
+df_cat = df_cat.fillna('Missing values')
 for i in df_cat.columns:
 
     if len(df_cat[i].value_counts()) <= 2:
@@ -139,9 +126,6 @@ for i in df_cat.columns:
             round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100), 2)) + " %)" + "\nMode: " + str(statistics.mode(df_cat[i]))
 
 
-
-
-# Analysis of QUANTITATIVE variables
 
 
 # Analysis of QUANTITATIVE variables
@@ -208,5 +192,4 @@ for i in df_num.columns:
 
 
 
-
-ppt.save("Test.pptx")
+ppt.save("Datas_final.pptx")

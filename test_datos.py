@@ -83,10 +83,52 @@ days_dx_surg1=df_dates['date_1']-df_dates[dx_date].iloc[:,0]
 #days_dx_rec=df_dates[rec_year].iloc[:,0]-df_dates[dx_date].iloc[:,0]
 days_dx_death=df_dates[death_year].iloc[:,0]-df_dates[dx_date].iloc[:,0]
 
-# Add to df_num for plotting
-df_num['days_dx_treat']=days_dx_treat
-#df_num['days_dx_rec']=days_dx_rec
-df_num['days_dx_death']=days_dx_death
+
+# Plots
+sns.distplot(days_dx_treat.dt.days) #scatter plot
+plt.title('Days until treatment')
+plt.ylabel("frequency")
+plt.xlabel("days")
+#plt.xlim([0,200])
+plt.savefig("Dates1", dpi=300)
+
+# Pict to ppt
+img_path1 = "Dates1.png"
+graph_slide_layout = ppt.slide_layouts[8]
+slide = ppt.slides.add_slide(graph_slide_layout)
+placeholder = slide.placeholders[1]
+pic = placeholder.insert_picture(img_path1)
+
+
+sns.distplot(days_dx_surg1.dt.days) #scatter plot
+plt.title('Days until first surgery')
+plt.ylabel("frequency")
+plt.xlabel("days")
+#plt.xlim([0,200])
+plt.savefig("Dates2", dpi=300)
+
+# Pict to ppt
+img_path2 = "Dates2.png"
+graph_slide_layout = ppt.slide_layouts[8]
+slide = ppt.slides.add_slide(graph_slide_layout)
+placeholder = slide.placeholders[1]
+pic = placeholder.insert_picture(img_path2)
+
+
+sns.distplot(days_dx_treat.dt.days) #scatter plot por qué sale asi? Aún haciendo dropna da la freq tan baja.
+plt.title('Days until death')
+plt.ylabel("frequency")
+plt.xlabel("days")
+#plt.xlim([0,200])
+plt.savefig("Dates3", dpi=300)
+
+# Pict to ppt
+img_path3 = "Dates3.png"
+graph_slide_layout = ppt.slide_layouts[8]
+slide = ppt.slides.add_slide(graph_slide_layout)
+placeholder = slide.placeholders[1]
+pic = placeholder.insert_picture(img_path3)
+
 
 
 
@@ -141,7 +183,6 @@ for i in df_cat.columns:
 
 
 
-# Analysis of QUANTITATIVE variables
 
 
 # Analysis of QUANTITATIVE variables
@@ -154,7 +195,6 @@ df_num.drop(cols_empty,
         axis=1,
         inplace=True)
 
-# Analysis of dates
 
 for i in df_num.columns:
     print(i)

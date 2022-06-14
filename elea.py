@@ -41,6 +41,7 @@ df_date = df[date_vars]
 
 df = df.fillna('Missing values')
 
+
 df_date = pd.DataFrame(columns=['days_btw_diagnosis_surgery','days_btw_diagnosis_death','days_btw_diagnosis_first_treatment', 'days_btw_first_last_schema'])
 df_yes_no = pd.DataFrame(columns=['death'])
 
@@ -73,7 +74,7 @@ for i in df.columns:
 
 
 
-df_num = pd.concat([df_num, df_date], ignore_index=True)
+#df_num = pd.concat([df_num, df_date], ignore_index=True)
 df_cat = pd.concat([df_cat, df_yes_no], ignore_index=True)
 
 
@@ -138,8 +139,6 @@ df_num.drop(cols_empty,
         axis=1,
         inplace=True)
 
-# Analysis of dates
-
 for i in df_num.columns:
     print(i)
     # Box plot
@@ -173,6 +172,7 @@ for i in df_num.columns:
     # Histogram
     plt.subplot(1, 2, 2)
     sns.distplot(df_num[i]) #scatter plot
+    #df_num[i].value_counts().hist()    para las fechas
     plt.title('Distribution')
     plt.ylabel("")
     plt.savefig("Num_variable_" + str(i), dpi=300)
@@ -189,6 +189,30 @@ for i in df_num.columns:
     pic = placeholder.insert_picture(img_path)
     subtitle = slide.placeholders[2]
     subtitle.text = "Variable " + str(i) + " has: " + str(len(outliers)) + " outliers" + "\nMean: " + str(round(np.nanmean(df_num[i]),2)) + "\nMedian: " + str(np.nanmedian(df_num[i])) + "\nMissing values: " + str(df_num[i].isnull().sum())
+
+# Plot of dates
+
+for i in df_date.columns:
+# Histogram
+    plt.subplot(1, 2, 2)
+    df_date[i].value_counts().hist()
+    plt.title('Distribution')
+    plt.ylabel("")
+    plt.savefig("Date_variable_" + str(i), dpi=300)
+
+    # Picts to ppt
+    img_path = "Date_variable_" + str(i) + '.png'
+
+    graph_slide_layout = ppt.slide_layouts[8]
+    slide = ppt.slides.add_slide(graph_slide_layout)
+
+    title = slide.shapes.title
+    title.text = str(i)
+    placeholder = slide.placeholders[1]
+    pic = placeholder.insert_picture(img_path)
+    #subtitle = slide.placeholders[2]
+    #subtitle.text = "Variable " + str(i) + " has: " + str(len(outliers)) + " outliers" + "\nMean: " + str(round(np.nanmean(df_num[i]),2)) + "\nMedian: " + str(np.nanmedian(df_num[i])) + "\nMissing values: " + str(df_num[i].isnull().sum())
+
 
 
 

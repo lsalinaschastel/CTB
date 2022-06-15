@@ -18,7 +18,7 @@ ppt = Presentation()
 # Separate cat from numerical variables
 cat_vars = []
 num_vars = []
-
+date_vars = []
 for i, row in dictio.iterrows():
     if dictio['Type'][i] == 'num':
         num_vars.append(dictio['Variable'][i])
@@ -30,7 +30,7 @@ for i, row in dictio.iterrows():
 
 df_cat = df[cat_vars]
 df_num = df[num_vars]
-#df_date = df[date_vars]
+df_date = df[date_vars]
 
 
 # Analysis of DATE VARIABLES
@@ -71,24 +71,8 @@ for i in df.columns:
                 df_yes_no.loc[j, 'death'] = 'no'
             reformate_date(i, j,first_treat[0], 'Days between diagnosis and first treatment', df_date)
 
+df_cat = pd.concat([df_cat, df_yes_no], ignore_index=True)
 
-# Plot the dates
-for i in df_date.columns:
-    # Histogram
-    plt.subplot(1, 2, 2)
-    df_date[i].value_counts().hist()
-    plt.ylabel("Frequency")
-    plt.xlabel("Days")
-    plt.savefig("Date_variable_" + str(i), dpi=300)
-
-    # Picts to ppt
-    img_path = "Date_variable_" + str(i) + '.png'
-    graph_slide_layout = ppt.slide_layouts[8]
-    slide = ppt.slides.add_slide(graph_slide_layout)
-    title = slide.shapes.title
-    title.text = str(i)
-    placeholder = slide.placeholders[1]
-    pic = placeholder.insert_picture(img_path)
 
 # Analysis of CATEGORICAL variables
 
@@ -204,6 +188,23 @@ for i in df_num.columns:
 
 
 
+# Plot the dates
+for i in df_date.columns:
+    # Histogram
+    plt.subplot(1, 2, 2)
+    df_date[i].value_counts().hist()
+    plt.ylabel("Frequency")
+    plt.xlabel("Days")
+    plt.savefig("Date_variable_" + str(i), dpi=300)
+
+    # Picts to ppt
+    img_path = "Date_variable_" + str(i) + '.png'
+    graph_slide_layout = ppt.slide_layouts[8]
+    slide = ppt.slides.add_slide(graph_slide_layout)
+    title = slide.shapes.title
+    title.text = str(i)
+    placeholder = slide.placeholders[1]
+    pic = placeholder.insert_picture(img_path)
 
 
 ppt.save("Datas_final.pptx")

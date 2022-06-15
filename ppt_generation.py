@@ -38,7 +38,7 @@ df_num = df[num_vars]
 df = df.fillna('Missing values')
 
 # We create new variables that will be the result of operating with the dates
-df_date = pd.DataFrame(columns=['days_btw_diagnosis_surgery','days_btw_diagnosis_death','days_btw_diagnosis_first_treatment', 'days_btw_first_last_schema'])
+df_date = pd.DataFrame(columns=['Days between diagnosis and first surgery','Days between diagnosis and death','Days between diagnosis and first treatment', 'Days between first and last schema'])
 
 # We create a new categorical variable that says whether the patient has died, and concat it to df_cat
 df_yes_no = pd.DataFrame(columns=['death'])
@@ -63,24 +63,22 @@ def reformate_date (i, j, date_2, title, df_):
 for i in df.columns:
     if i == dx_date[0]:
         for j in range(df.shape[0]):
-            reformate_date(i, j, 'surgery_date_1', 'days_btw_diagnosis_surgery', df_date)
-            reformate_date(i, j,death_year[0], 'days_btw_diagnosis_death', df_date)
+            reformate_date(i, j, 'surgery_date_1', 'Days between diagnosis and first surgery', df_date)
+            reformate_date(i, j,death_year[0], 'Days between diagnosis and death', df_date)
             if df.iloc[j][i] != 'Missing values' and df.iloc[j]['death_date_1'] != 'Missing values':
                 df_yes_no.loc[j, 'death'] = 'yes'
             if df.iloc[j][death_year[0]] == 'Missing values':
                 df_yes_no.loc[j, 'death'] = 'no'
-            reformate_date(i, j,first_treat[0], 'days_btw_diagnosis_first_treatment', df_date)
+            reformate_date(i, j,first_treat[0], 'Days between diagnosis and first treatment', df_date)
 
 
 # Plot the dates
-
 for i in df_date.columns:
     # Histogram
     plt.subplot(1, 2, 2)
     df_date[i].value_counts().hist()
-    plt.title('Distribution')
-    plt.ylabel("")
-    plt.xlabel(i)
+    plt.ylabel("Frequency")
+    plt.xlabel("Days")
     plt.savefig("Date_variable_" + str(i), dpi=300)
 
     # Picts to ppt
@@ -91,8 +89,6 @@ for i in df_date.columns:
     title.text = str(i)
     placeholder = slide.placeholders[1]
     pic = placeholder.insert_picture(img_path)
-    subtitle = slide.placeholders[2]
-    subtitle.text = ""
 
 # Analysis of CATEGORICAL variables
 
@@ -124,7 +120,9 @@ for i in df_cat.columns:
         # Bar chart
         fig = plt.figure()
         df_cat.groupby(i).size().plot(kind='bar', rot='vertical')
-        plt.xticks(fontsize=5, rotation='vertical')
+        plt.ylabel("Frequency")
+        plt.xlabel("")
+        plt.xticks(fontsize=8, rotation=45,ha='right')
         plt.tight_layout()
         plt.savefig("Barchart_variable_" + str(i), dpi=300)
 

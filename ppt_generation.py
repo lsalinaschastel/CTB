@@ -4,6 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statistics
+from datetime import date, timedelta, datetime
+import io
+from pptx import Presentation
+from pptx.util import Inches
 from pptx import Presentation
 
 
@@ -14,6 +18,31 @@ dictio = pd.read_csv('Dict_final.csv', delimiter=';')
 
 # Create ppt
 ppt = Presentation()
+
+# First slide
+title_slide_layout = ppt.slide_layouts[0]
+slide = ppt.slides.add_slide(title_slide_layout)
+slide.shapes.title.text = "CLARIFY"
+subtitle = slide.placeholders[1]
+subtitle.text = "Generated on {:%m-%d-%Y}".format(date.today())
+
+# Second slide
+# Initial analysis
+info=[]
+for i in df.columns:
+    info.append(f'{i} : {df[i].nunique()} values')
+
+second_slide = ppt.slide_layouts[5]
+second = ppt.slides.add_slide(second_slide)
+second.shapes.title.text = "Data has been extracted"  + "\n Unique values:  " +"\n " +str(info)
+# add a text box
+textbox = second.shapes.add_textbox(Inches(3), Inches(1.5),Inches(3), Inches(1))
+textframe = textbox.text_frame
+paragraph = textframe.add_paragraph()
+paragraph.text = "Data from " + str(len(df)) +" women has been processed"
+
+
+
 
 # Separate cat from numerical variables
 cat_vars = []
@@ -33,49 +62,10 @@ df_num = df[num_vars]
 df_date = df[date_vars]
 
 
-# Analysis of DATE VARIABLES
-
 df = df.fillna('Missing values')
 
-# We create new variables that will be the result of operating with the dates
-df_date = pd.DataFrame(columns=['Days between diagnosis and first surgery','Days between diagnosis and death','Days between diagnosis and first treatment', 'Days between first and last schema'])
-
-# We create a new categorical variable that says whether the patient has died, and concat it to df_cat
-df_yes_no = pd.DataFrame(columns=['death'])
-df_cat = pd.concat([df_cat, df_yes_no], ignore_index=True)
-
-# "Automatically" select the columns
-dx_date=df.filter(regex='diagnosis|dx').columns
-first_treat=df.filter(regex='first_treat').columns
-rec_year=df.filter(regex='recurrence|rec').columns
-death_year=df.filter(regex='death_year|death_date').columns
-
-# We transform the dates to d-m-y format and do the substraction between 2 dates
-def reformate_date (i, j, date_2, title, df_):
-    if df.iloc[j][i] != 'Missing values' and df.iloc[j][date_2] != 'Missing values':
-        first_date = str(df.iloc[j][i])
-        second_date = str(df.iloc[j][date_2])
-        formatted_date1 = datetime.strptime(first_date, "%d/%m/%Y")
-        formatted_date2 = datetime.strptime(second_date, "%d/%m/%Y")
-        df_.loc[j, title] = (formatted_date2 - formatted_date1).total_seconds() / 86400
-
-# We substract the surgery date, the death date, and the first treatment date, to the diagnosis date
-for i in df.columns:
-    if i == dx_date[0]:
-        for j in range(df.shape[0]):
-            reformate_date(i, j, 'surgery_date_1', 'Days between diagnosis and first surgery', df_date)
-            reformate_date(i, j,death_year[0], 'Days between diagnosis and death', df_date)
-            if df.iloc[j][i] != 'Missing values' and df.iloc[j]['death_date_1'] != 'Missing values':
-                df_yes_no.loc[j, 'death'] = 'yes'
-            if df.iloc[j][death_year[0]] == 'Missing values':
-                df_yes_no.loc[j, 'death'] = 'no'
-            reformate_date(i, j,first_treat[0], 'Days between diagnosis and first treatment', df_date)
-
-df_cat = pd.concat([df_cat, df_yes_no], ignore_index=True)
-
-
 # Analysis of CATEGORICAL variables
-
+#df_cat = df_cat.fillna('Missing values')
 for i in df_cat.columns:
     if df_cat[i].dtypes == 'O':
         df_cat[i] = df_cat[i].str.lower()
@@ -83,7 +73,7 @@ for i in df_cat.columns:
     if len(df_cat[i].value_counts()) <= 2:
         # Pie chart
         fig = plt.figure(figsize=(20, 5))
-        df_cat.groupby(i).size().plot(kind='pie', textprops={'fontsize': 15},
+        df_cat.groupby(i).size().plot(kind='pie', textprops={'fontsize': 10},
                                       colors=['gold', 'blue'], autopct=lambda x: str(round(x, 2)) + '%',
                                       pctdistance=0.5)
         plt.ylabel("")
@@ -98,15 +88,14 @@ for i in df_cat.columns:
         placeholder = slide.placeholders[1]
         pic = placeholder.insert_picture(img_path)
         subtitle = slide.placeholders[2]
-        subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(len(df_cat)) +  " (" + str(round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100),2)) + " %)" + "\nMode: " + str(statistics.mode(df_cat[i]))
+        subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(len(df_cat)) +  "\nMode: " + str(statistics.mode(df_cat[i])) + "\nMissing values: " + str(df_cat[i].isnull().sum()) +" (" + str(round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100),2)) + " %)"
 
     else:
         # Bar chart
         fig = plt.figure()
-        df_cat.groupby(i).size().plot(kind='bar', rot='vertical')
-        plt.ylabel("Frequency")
-        plt.xlabel("")
-        plt.xticks(fontsize=8, rotation=45,ha='right')
+        df_cat.groupby(i).size().plot(kind='barh')
+        plt.xlabel("Frequency")
+        plt.ylabel("")
         plt.tight_layout()
         plt.savefig("Barchart_variable_" + str(i), dpi=300)
 
@@ -121,8 +110,7 @@ for i in df_cat.columns:
         pic = placeholder.insert_picture(img_path)
         subtitle = slide.placeholders[2]
         subtitle.text = str(len(df_cat[i].value_counts())) + " categories" + "\nSample size: " + str(
-            len(df_cat))  + " (" + str(
-            round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100), 2)) + " %)" + "\nMode: " + str(statistics.mode(df_cat[i]))
+            len(df_cat))  +  "\nMode: " + str(statistics.mode(df_cat[i])) + "\nMissing values: " + str(df_cat[i].isnull().sum()) +" (" + str(round(((df_cat[i].isnull().sum() / df_cat.shape[0]) * 100),2)) + " %)"
 
 
 
@@ -189,22 +177,6 @@ for i in df_num.columns:
 
 
 # Plot the dates
-for i in df_date.columns:
-    # Histogram
-    plt.subplot(1, 2, 2)
-    df_date[i].value_counts().hist()
-    plt.ylabel("Frequency")
-    plt.xlabel("Days")
-    plt.savefig("Date_variable_" + str(i), dpi=300)
-
-    # Picts to ppt
-    img_path = "Date_variable_" + str(i) + '.png'
-    graph_slide_layout = ppt.slide_layouts[8]
-    slide = ppt.slides.add_slide(graph_slide_layout)
-    title = slide.shapes.title
-    title.text = str(i)
-    placeholder = slide.placeholders[1]
-    pic = placeholder.insert_picture(img_path)
 
 
 ppt.save("Datas_final.pptx")

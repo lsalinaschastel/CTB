@@ -60,7 +60,7 @@ for i in df.columns:
 
 df_table = pd.DataFrame.from_dict(table, orient='index')
 
-x, y, cx, cy = Inches(2), Inches(2), Inches(4), Inches(1.5)
+x, y, cx, cy = Inches(0.5), Inches(0.5), Inches(4), Inches(5)
 shape = third.shapes.add_table(round(len(df_table)/2), 2, x, y, cx, cy)
 
 #table_placeholder = third.shapes[1]

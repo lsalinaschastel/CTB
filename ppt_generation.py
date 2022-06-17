@@ -27,20 +27,15 @@ subtitle = slide.placeholders[1]
 subtitle.text = "Generated on {:%m-%d-%Y}".format(date.today())
 
 # Second slide
-# Initial analysis
-info=[]
-for i in df.columns:
-    info.append(f'{i} : {df[i].nunique()} values')
 
 second_slide = ppt.slide_layouts[5]
 second = ppt.slides.add_slide(second_slide)
-second.shapes.title.text = "Data has been extracted"  + "\n Unique values:  " +"\n " +str(info)
+second.shapes.title.text = "Data has been extracted"
 # add a text box
 textbox = second.shapes.add_textbox(Inches(3), Inches(1.5),Inches(3), Inches(1))
 textframe = textbox.text_frame
 paragraph = textframe.add_paragraph()
-paragraph.text = "Data from " + str(len(df)) +" women has been processed"
-
+paragraph.text = "Data from " + str(len(df)) +" women with breast cancer has been processed"
 
 
 
